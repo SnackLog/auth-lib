@@ -31,12 +31,12 @@ func Authentication(c *gin.Context) {
 		return
 	}
 
+	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
 		return
 	}
-	defer response.Body.Close()
 
 	var authResp authServiceResponse
 	if err := json.Unmarshal(body, &authResp); err != nil {
