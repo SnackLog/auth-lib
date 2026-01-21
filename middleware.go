@@ -18,6 +18,7 @@ type authServiceResponse struct {
 func bypassLogic(c *gin.Context) {
 	log.Println("\033[1;31mWARNING: DEBUG_BYPASS_AUTH_MIDDLEWARE is enabled, bypassing authentication and setting user to 'foo'!\033[0m")
 	c.Set("username", "foo")
+	c.Next()
 }
 
 func Authentication(c *gin.Context) {
