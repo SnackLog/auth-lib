@@ -30,6 +30,7 @@ func Authentication(c *gin.Context) {
 	requestUrl := fmt.Sprintf("%s/%s", serviceconfig.GetConfig().ApiRootUrl, "auth/session")
 	request, err := http.NewRequest("GET", requestUrl, nil)
 	if err != nil {
+		log.Printf("[AUTH] Failed to contacft auth service at %s: %v", requestUrl, err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 		return
 	}
@@ -38,6 +39,7 @@ func Authentication(c *gin.Context) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil || response.StatusCode != http.StatusOK {
+		log.Printf("[AUTH] Failed to validate session with auth service at %s: %v", requestUrl, err)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -45,12 +47,14 @@ func Authentication(c *gin.Context) {
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
+		log.Printf("[AUTH] Failed to read response from auth service at %s: %v", requestUrl, err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response body"})
 		return
 	}
 
 	var authResp authServiceResponse
 	if err := json.Unmarshal(body, &authResp); err != nil {
+		log.Printf("[AUTH] Failed to parse response from auth service at %s: %v", requestUrl, err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse response"})
 		return
 	}
