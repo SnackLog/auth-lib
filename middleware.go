@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	serviceconfig "github.com/SnackLog/service-config-lib"
@@ -14,7 +15,16 @@ type authServiceResponse struct {
 	Username string `json:"username"`
 }
 
+func bypassLogic(c *gin.Context) {
+	log.Println("\033[1;31mWARNING: DEBUG_BYPASS_AUTH_MIDDLEWARE is enabled, bypassing authentication and setting user to 'foo'!\033[0m")
+	c.Set("username", "foo")
+}
+
 func Authentication(c *gin.Context) {
+	if serviceconfig.GetConfig().DebugBypassAuthMiddleware {
+		bypassLogic(c)
+		return
+	}
 	authHeader := c.GetHeader("Authorization")
 	requestUrl := fmt.Sprintf("%s/%s", serviceconfig.GetConfig().ApiRootUrl, "auth/session")
 	request, err := http.NewRequest("GET", requestUrl, nil)
